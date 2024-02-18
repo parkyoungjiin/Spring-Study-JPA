@@ -1,8 +1,10 @@
 package jpabook.jpashop.domain;
 
 import jpabook.jpashop.domain.item.Delivery;
+import jpabook.jpashop.domain.item.DeliveryStatus;
 import lombok.Getter;
 import lombok.Setter;
+import org.aspectj.weaver.ast.Or;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -51,5 +53,51 @@ public class Order {
         this.delivery = delivery;
         delivery.setOrder(this);
     }
+
+    // 생성 메서드
+    // order -> orderItem, delivery 등 연관된 엔티티도 생성해야 함.
+    public static Order createOrder(Member member, Delivery delivery, OrderItem... orderItems) {
+        Order order = new Order();
+        order.setMember(member);
+        order.setDelivery(delivery);
+        for (OrderItem orderItem : orderItems) {
+            order.addOrderItem(orderItem);
+        }
+
+        order.setStatus(OrderStatus.ORDER);
+        order.setOrderDate(LocalDateTime.now());
+        return order;
+    }
+
+    // 비즈니스 로직
+    /**
+     * 주문 취소
+     * DeliveryStatus 완료인지 판별
+     * 아닌 경우 취소상태로 변경 + 재고 원복(orderItem.cancel)
+     */
+    public void cancel() {
+        if (delivery.getStatus() == DeliveryStatus.COMP) {
+            throw new IllegalStateException("이미 배송완료된 상품은 취소가 불가능합니다.");
+        }
+        // 취소 상태로 변경
+        this.setStatus(OrderStatus.CANCEL);
+
+        // 재고 원복
+
+        for (OrderItem orderItem : orderItems) {
+            orderItem.cancel();
+        }
+    }
+
+    //==전체 주문 가격 조회 로직==//
+    public int getTotalPrice() {
+        int totalPrice = 0;
+        for (OrderItem orderItem : orderItems) {
+            totalPrice += orderItem.getTotalPrice();
+        }
+        return totalPrice;
+    }
+
+
 
 }
