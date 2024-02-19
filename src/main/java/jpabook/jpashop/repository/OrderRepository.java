@@ -22,10 +22,11 @@ public class OrderRepository {
 
     // 검색 기능은 추후에 추가할 예정.
     public List<Order> findAll(OrderSearch orderSearch) {
+        //동적 쿼리 처리 필요
         String jpql = "select o from Order o Join o.member m" +
                 " where o.status = :status" +
                 " and m.name like :name";
-        em.createQuery(jpql, Order.class)
+        return em.createQuery(jpql, Order.class)
                 .setParameter("status",orderSearch.getOrderStatus())
                 .setParameter("name", orderSearch.getMemberName())
                 .setMaxResults(1000)
