@@ -69,4 +69,52 @@ public class OrderRepository {
         }
         return query.getResultList();
     }
+
+    public List<Order> findAllWithMemberDelivery() {
+        return em.createQuery(
+                "select o from Order o" +
+                        " join fetch o.member m" +
+                        " join fetch o.delivery d", Order.class
+        ).getResultList();
+    }
+
+    public List<SimpleOrderQueryDto> findOrderDtos() {
+        return em.createQuery(
+                        "select new jpabook.jpashop.repository.order.simplequery.OrderSimpleQueryDto(o.id, m.name, o.orderDate, o.status, d.address)" +
+                                " from Order o" +
+                                " join o.member m" +
+                                " join o.delivery d", SimpleOrderQueryDto.class)
+                .getResultList();
+    }
+
+    public List<Order> findAllWithItem() {
+        return em.createQuery(
+                "select distinct o from Order o " +
+                        " join fetch o.member m" +
+                        " join fetch o.delivery d" +
+                        " join fetch o.orderItem oi" +
+                        " join fetch oi.item.i", Order.class
+                ).getResultList();
+    }
+
+    /**
+     *
+     * @param offset
+     * @param limit
+     * @return
+     *
+     * ToOne 관계는 페치조인으로 가져온다.
+     * BatchSize를 전역적으로 설정하여 한 번 쿼리가 발생할 때 가져올 데이터의 양을 설정한다.
+     * offset, limit를 파라미터로 넘겨 페이징 처리를 한다.
+     *
+     */
+    public List<Order> findAllWithMemberDelivery(int offset, int limit) {
+        return em.createQuery(
+                "select o from Order o" +
+                        " join fetch o.member m" +
+                        " join fetch o.delivery d", Order.class
+        ).setFirstResult(offset)
+        .setMaxResults(limit)
+        .getResultList();
+    }
 }
