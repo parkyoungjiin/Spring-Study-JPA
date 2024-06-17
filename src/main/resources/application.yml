@@ -7,11 +7,12 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
 #       show_sql: true # (system.out?? ????? ??, ??? ?? ?? ?? ??)
        format_sql: true
+       default_batch_fetch_size: 1000 # 전역적으로 페치 조인을 할 때 1000개만 가져온다.
 
 
 logging.level:
